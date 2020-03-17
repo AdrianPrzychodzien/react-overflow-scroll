@@ -20,5 +20,9 @@
     "@babel/preset-react": "^7.8.3",
     "react": "^16.13.0",
     "react-dom": "^16.13.0"
+  },
+  "dependencies": {
+    "lodash.debounce": "^4.0.8",
+    "styled": "^1.0.0"
   }
 }
