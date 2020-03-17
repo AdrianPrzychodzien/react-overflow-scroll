@@ -57,7 +57,7 @@ const StyledSlider = styled.div`
   }
 `;
 
-const Slider = ({ children, withArrows = true }) => {
+const Slider = ({ data, withArrows = true, buttonSize = '0.8rem 1.2rem' }) => {
   const [hasOverflow, setHasOverflow] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -80,7 +80,7 @@ const Slider = ({ children, withArrows = true }) => {
       );
       debounceCheckForOverflow.cancel();
     };
-  }, [children]);
+  }, [data]);
 
   const checkForScrollPosition = () => {
     const { scrollLeft, scrollWidth, clientWidth } = container.current;
@@ -127,16 +127,18 @@ const Slider = ({ children, withArrows = true }) => {
 
   return (
     <StyledSlider>
-      <SliderContainer ref={container}>{children}</SliderContainer>
+      <SliderContainer ref={container}>{data}</SliderContainer>
       {withArrows && (
         <ButtonGroup>
           <ButtonLeft
+            buttonSize={buttonSize}
             canScrollLeft={canScrollLeft}
             onClick={() => scrollContainerBy(-scrollDistance())}
           >
             <FontAwesomeIcon icon={faChevronLeft} size="lg" />
           </ButtonLeft>
           <ButtonRight
+            buttonSize={buttonSize}
             canScrollRight={canScrollRight}
             onClick={() => scrollContainerBy(scrollDistance())}
           >
