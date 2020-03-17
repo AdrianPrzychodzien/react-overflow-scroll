@@ -9,28 +9,29 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 const ButtonGroup = styled.div`
-  textalign: center;
-  position: relative;
+  width: 100%;
+  display: flex;
+  position: absolute;
+  top: 50%;
 `;
 const Button = styled.button`
-  position: absolute;
-  top: -260px;
   opacity: 0;
   padding: 0.8rem 1.2rem;
   border: 2px solid gray;
   outline: none;
+  transform: translateY(-50%);
   transition: all 0.2s linear;
   :hover {
     border-color: black;
   }
 `;
 const ButtonLeft = styled(Button)`
-  left: 0px;
   display: ${({ canScrollLeft }) => (canScrollLeft ? `block` : `none`)};
+  margin-right: auto;
 `;
 const ButtonRight = styled(Button)`
-  right: 0px;
   display: ${({ canScrollRight }) => (canScrollRight ? `block` : `none`)};
+  margin-left: auto;
 `;
 
 const SliderContainer = styled.div`
@@ -44,8 +45,10 @@ const SliderContainer = styled.div`
 `;
 
 const StyledSlider = styled.div`
-  display: block;
   margin-bottom: 1rem;
+  position: relative;
+  display: flex;
+  justify-content: center;
   :hover ${ButtonRight} {
     opacity: 0.7;
   }
@@ -102,10 +105,21 @@ const Slider = ({ children, withArrows = true }) => {
     const { children, clientWidth } = container.current;
     let fullItems = Math.floor(clientWidth / children[0].clientWidth);
 
-    let sizeOfFullItems = fullItems * (children[0].clientWidth + 8); // margin 8px
-    console.log(children);
+    // calculate margin of single element
+    let nodeStyle = window.getComputedStyle(children[0]);
+    let mr = nodeStyle.marginRight;
+    let ml = nodeStyle.marginLeft;
+    let marginRight = mr.substring(0, mr.length - 2);
+    let marginLeft = ml.substring(0, ml.length - 2);
+
+    let singleChildrenMargin = +marginRight + +marginLeft;
+
+    let sizeOfFullItems =
+      fullItems * (children[0].clientWidth + singleChildrenMargin);
+
     if (!canScrollRight) {
-      let distance = sizeOfFullItems - (clientWidth - sizeOfFullItems);
+      let distance = sizeOfFullItems - (clientWidth - sizeOfFullItems) -
+        singleChildrenMargin;
       return distance;
     }
     return sizeOfFullItems;
