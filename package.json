@@ -1,6 +1,6 @@
 {
   "name": "react-overflow-scroll",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "slider wrapper",
   "main": "index.js",
   "scripts": {
