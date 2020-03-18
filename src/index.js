@@ -42,6 +42,8 @@ const SliderContainer = styled.div`
   -ms-overflow-style: none;
   display: flex;
   overflow: auto;
+  cursor: ${({ activeClass }) => activeClass ? `grabbing` : `pointer`};
+  ${({ activeClass }) => activeClass ? `cursor: -webkit-grabbing` : ``};
 `;
 
 const StyledSlider = styled.div`
@@ -57,24 +59,26 @@ const StyledSlider = styled.div`
   }
 `;
 
-const Slider = ({ data, withArrows = true, buttonSize = '0.8rem 1.2rem' }) => {
+const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8rem 1.2rem' }) => {
   const [hasOverflow, setHasOverflow] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [activeClass, setActiveClass] = useState(false)
 
   const container = useRef(null);
 
   useEffect(() => {
+    const slider = container.current
     checkForOverflow();
     checkForScrollPosition();
 
-    container.current.addEventListener(
+    slider.addEventListener(
       "scroll",
       debounceCheckForScrollPosition
     );
 
     return () => {
-      container.current.removeEventListener(
+      slider.removeEventListener(
         "scroll",
         debounceCheckForScrollPosition
       );
@@ -125,9 +129,47 @@ const Slider = ({ data, withArrows = true, buttonSize = '0.8rem 1.2rem' }) => {
     return sizeOfFullItems;
   };
 
+  const handleGrabbing = e => {
+    const slider = document.querySelector('#slider')
+    let isDown = false;
+    let startX;
+    let scrollLeftChange;
+
+    slider.addEventListener('mousedown', e => {
+      e.preventDefault()
+      isDown = true
+      setActiveClass(true)
+      startX = e.pageX - slider.offsetLeft
+      scrollLeftChange = slider.scrollLeft
+    })
+    slider.addEventListener('mouseleave', e => {
+      isDown = false
+      setActiveClass(false)
+    })
+    slider.addEventListener('mouseup', e => {
+      isDown = false
+      setActiveClass(false)
+    })
+    slider.addEventListener('mousemove', e => {
+      if (isDown) {
+        e.preventDefault()
+        const x = e.pageX - slider.offsetLeft
+        const walk = (x - startX) * 3 // scroll-fast
+        slider.scrollLeft = scrollLeftChange - walk
+      }
+    })
+  }
+
   return (
     <StyledSlider>
-      <SliderContainer ref={container}>{data}</SliderContainer>
+      <SliderContainer
+        activeClass={activeClass}
+        onClick={withGrab ? (e => handleGrabbing(e)) : null}
+        ref={container}
+        id="slider"
+      >
+        {data}
+      </SliderContainer>
       {withArrows && (
         <ButtonGroup>
           <ButtonLeft
