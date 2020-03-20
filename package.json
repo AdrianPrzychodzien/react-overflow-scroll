@@ -1,11 +1,11 @@
 {
   "name": "react-overflow-scroll",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "slider wrapper",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "./node_modules/.bin/babel src --out-file index.build.js"
+    "build": "./node_modules/.bin/babel src --out-file index.js"
   },
   "author": "Adrian Przychodzień",
   "license": "ISC",
