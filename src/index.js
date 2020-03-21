@@ -57,7 +57,7 @@ const StyledSlider = styled.div`
   }
 `;
 
-const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8rem 1.2rem' }) => {
+const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8rem 1.2rem', scrollBy }) => {
   const [arrows, setArrows] = useState(withArrows)
   const [hasOverflow, setHasOverflow] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -103,7 +103,7 @@ const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8re
     container.current.scrollBy({ left: distance, behavior: "smooth" });
   };
 
-  const scrollDistance = () => {
+  const scrollDistance = (scrollBy) => {
     const { children, clientWidth } = container.current;
     let fullItems = Math.floor(clientWidth / children[0].clientWidth);
 
@@ -119,11 +119,23 @@ const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8re
     let sizeOfFullItems =
       fullItems * (children[0].clientWidth + singleChildrenMargin);
 
-    if (!canScrollRight) {
-      let distance = sizeOfFullItems - (clientWidth - sizeOfFullItems) -
-        singleChildrenMargin;
-      return distance;
+    // if there is scrollBy prop
+    if (scrollBy) {
+      let userScrollBy = scrollBy * (children[0].clientWidth + singleChildrenMargin)
+
+      if (!canScrollRight) {
+        return sizeOfFullItems - (clientWidth - userScrollBy) - singleChildrenMargin;
+      }
+
+      return userScrollBy
     }
+
+
+    if (!canScrollRight) {
+      return sizeOfFullItems - (clientWidth - sizeOfFullItems) -
+        singleChildrenMargin;
+    }
+
     return sizeOfFullItems;
   };
 
@@ -175,14 +187,14 @@ const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8re
           <ButtonLeft
             buttonSize={buttonSize}
             canScrollLeft={canScrollLeft}
-            onClick={() => scrollContainerBy(-scrollDistance())}
+            onClick={() => scrollContainerBy(-scrollDistance(scrollBy))}
           >
             <Arrow>{returnArrow('left')}</Arrow>
           </ButtonLeft>
           <ButtonRight
             buttonSize={buttonSize}
             canScrollRight={canScrollRight}
-            onClick={() => scrollContainerBy(scrollDistance())}
+            onClick={() => scrollContainerBy(scrollDistance(scrollBy))}
           >
             <Arrow>{returnArrow('right')}</Arrow>
           </ButtonRight>
