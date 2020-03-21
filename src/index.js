@@ -2,12 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import debounce from "lodash/debounce";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faChevronRight,
-  faChevronLeft
-} from "@fortawesome/free-solid-svg-icons";
-
 const ButtonGroup = styled.div`
   width: 100%;
   display: flex;
@@ -33,6 +27,10 @@ const ButtonRight = styled(Button)`
   display: ${({ canScrollRight }) => (canScrollRight ? `block` : `none`)};
   margin-left: auto;
 `;
+const Arrow = styled.div`
+  font-weight: 600;
+  transform: scale(1.5, 2)
+`
 
 const SliderContainer = styled.div`
   ::-webkit-scrollbar {
@@ -42,8 +40,8 @@ const SliderContainer = styled.div`
   -ms-overflow-style: none;
   display: flex;
   overflow: auto;
-  cursor: ${({ activeClass }) => activeClass ? `grabbing` : `pointer`};
-  ${({ activeClass }) => activeClass ? `cursor: -webkit-grabbing` : ``};
+  cursor: ${({ withGrab }) => withGrab ? `grabbing` : `pointer`};
+  ${({ withGrab }) => withGrab ? `cursor: -webkit-grabbing` : ``};
 `;
 
 const StyledSlider = styled.div`
@@ -60,10 +58,10 @@ const StyledSlider = styled.div`
 `;
 
 const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8rem 1.2rem' }) => {
+  const [arrows, setArrows] = useState(withArrows)
   const [hasOverflow, setHasOverflow] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [activeClass, setActiveClass] = useState(false)
 
   const container = useRef(null);
 
@@ -138,17 +136,17 @@ const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8re
     slider.addEventListener('mousedown', e => {
       e.preventDefault()
       isDown = true
-      setActiveClass(true)
+      setArrows(false)
       startX = e.pageX - slider.offsetLeft
       scrollLeftChange = slider.scrollLeft
     })
     slider.addEventListener('mouseleave', e => {
       isDown = false
-      setActiveClass(false)
+      setArrows(true)
     })
     slider.addEventListener('mouseup', e => {
       isDown = false
-      setActiveClass(false)
+      setArrows(true)
     })
     slider.addEventListener('mousemove', e => {
       if (isDown) {
@@ -160,31 +158,33 @@ const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8re
     })
   }
 
+  const returnArrow = direction => direction === 'left' ? '<' : '>'
+
   return (
     <StyledSlider>
       <SliderContainer
-        activeClass={activeClass}
+        withGrab={withGrab}
         onClick={withGrab ? (e => handleGrabbing(e)) : null}
         ref={container}
         id="slider"
       >
         {data}
       </SliderContainer>
-      {withArrows && (
+      {arrows && (
         <ButtonGroup>
           <ButtonLeft
             buttonSize={buttonSize}
             canScrollLeft={canScrollLeft}
             onClick={() => scrollContainerBy(-scrollDistance())}
           >
-            <FontAwesomeIcon icon={faChevronLeft} size="lg" />
+            <Arrow>{returnArrow('left')}</Arrow>
           </ButtonLeft>
           <ButtonRight
             buttonSize={buttonSize}
             canScrollRight={canScrollRight}
             onClick={() => scrollContainerBy(scrollDistance())}
           >
-            <FontAwesomeIcon icon={faChevronRight} size="lg" />
+            <Arrow>{returnArrow('right')}</Arrow>
           </ButtonRight>
         </ButtonGroup>
       )}
