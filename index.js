@@ -13,10 +13,6 @@ var _styledComponents = _interopRequireDefault(require("styled-components"));
 
 var _debounce = _interopRequireDefault(require("lodash/debounce"));
 
-var _reactFontawesome = require("@fortawesome/react-fontawesome");
-
-var _freeSolidSvgIcons = require("@fortawesome/free-solid-svg-icons");
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
@@ -31,8 +27,18 @@ function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) ||
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-function _templateObject6() {
+function _templateObject7() {
   var data = _taggedTemplateLiteral(["\n  margin-bottom: 1rem;\n  position: relative;\n  display: flex;\n  justify-content: center;\n  :hover ", " {\n    opacity: 0.7;\n  }\n  :hover ", " {\n    opacity: 0.7;\n  }\n"]);
+
+  _templateObject7 = function _templateObject7() {
+    return data;
+  };
+
+  return data;
+}
+
+function _templateObject6() {
+  var data = _taggedTemplateLiteral(["\n  ::-webkit-scrollbar {\n    width: 0px;\n  }\n  scrollbar-width: none;\n  -ms-overflow-style: none;\n  display: flex;\n  overflow: auto;\n  cursor: ", ";\n  ", ";\n"]);
 
   _templateObject6 = function _templateObject6() {
     return data;
@@ -42,7 +48,7 @@ function _templateObject6() {
 }
 
 function _templateObject5() {
-  var data = _taggedTemplateLiteral(["\n  ::-webkit-scrollbar {\n    width: 0px;\n  }\n  scrollbar-width: none;\n  -ms-overflow-style: none;\n  display: flex;\n  overflow: auto;\n  cursor: ", ";\n  ", ";\n"]);
+  var data = _taggedTemplateLiteral(["\n  font-weight: 600;\n  transform: scale(1.5, 2)\n"]);
 
   _templateObject5 = function _templateObject5() {
     return data;
@@ -106,15 +112,17 @@ var ButtonRight = (0, _styledComponents["default"])(Button)(_templateObject4(), 
   return canScrollRight ? "block" : "none";
 });
 
-var SliderContainer = _styledComponents["default"].div(_templateObject5(), function (_ref3) {
-  var activeClass = _ref3.activeClass;
-  return activeClass ? "grabbing" : "pointer";
+var Arrow = _styledComponents["default"].div(_templateObject5());
+
+var SliderContainer = _styledComponents["default"].div(_templateObject6(), function (_ref3) {
+  var withGrab = _ref3.withGrab;
+  return withGrab ? "grabbing" : "pointer";
 }, function (_ref4) {
-  var activeClass = _ref4.activeClass;
-  return activeClass ? "cursor: -webkit-grabbing" : "";
+  var withGrab = _ref4.withGrab;
+  return withGrab ? "cursor: -webkit-grabbing" : "";
 });
 
-var StyledSlider = _styledComponents["default"].div(_templateObject6(), ButtonRight, ButtonLeft);
+var StyledSlider = _styledComponents["default"].div(_templateObject7(), ButtonRight, ButtonLeft);
 
 var Slider = function Slider(_ref5) {
   var data = _ref5.data,
@@ -123,27 +131,28 @@ var Slider = function Slider(_ref5) {
       _ref5$withGrab = _ref5.withGrab,
       withGrab = _ref5$withGrab === void 0 ? false : _ref5$withGrab,
       _ref5$buttonSize = _ref5.buttonSize,
-      buttonSize = _ref5$buttonSize === void 0 ? '0.8rem 1.2rem' : _ref5$buttonSize;
+      buttonSize = _ref5$buttonSize === void 0 ? '0.8rem 1.2rem' : _ref5$buttonSize,
+      scrollBy = _ref5.scrollBy;
 
-  var _useState = (0, _react.useState)(false),
+  var _useState = (0, _react.useState)(withArrows),
       _useState2 = _slicedToArray(_useState, 2),
-      hasOverflow = _useState2[0],
-      setHasOverflow = _useState2[1];
+      arrows = _useState2[0],
+      setArrows = _useState2[1];
 
   var _useState3 = (0, _react.useState)(false),
       _useState4 = _slicedToArray(_useState3, 2),
-      canScrollLeft = _useState4[0],
-      setCanScrollLeft = _useState4[1];
+      hasOverflow = _useState4[0],
+      setHasOverflow = _useState4[1];
 
   var _useState5 = (0, _react.useState)(false),
       _useState6 = _slicedToArray(_useState5, 2),
-      canScrollRight = _useState6[0],
-      setCanScrollRight = _useState6[1];
+      canScrollLeft = _useState6[0],
+      setCanScrollLeft = _useState6[1];
 
   var _useState7 = (0, _react.useState)(false),
       _useState8 = _slicedToArray(_useState7, 2),
-      activeClass = _useState8[0],
-      setActiveClass = _useState8[1];
+      canScrollRight = _useState8[0],
+      setCanScrollRight = _useState8[1];
 
   var container = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
@@ -184,7 +193,7 @@ var Slider = function Slider(_ref5) {
     });
   };
 
-  var scrollDistance = function scrollDistance() {
+  var scrollDistance = function scrollDistance(scrollBy) {
     var _container$current3 = container.current,
         children = _container$current3.children,
         clientWidth = _container$current3.clientWidth;
@@ -196,11 +205,20 @@ var Slider = function Slider(_ref5) {
     var marginRight = mr.substring(0, mr.length - 2);
     var marginLeft = ml.substring(0, ml.length - 2);
     var singleChildrenMargin = +marginRight + +marginLeft;
-    var sizeOfFullItems = fullItems * (children[0].clientWidth + singleChildrenMargin);
+    var sizeOfFullItems = fullItems * (children[0].clientWidth + singleChildrenMargin); // if there is scrollBy prop
+
+    if (scrollBy) {
+      var userScrollBy = scrollBy * (children[0].clientWidth + singleChildrenMargin);
+
+      if (!canScrollRight) {
+        return sizeOfFullItems - (clientWidth - userScrollBy) - singleChildrenMargin;
+      }
+
+      return userScrollBy;
+    }
 
     if (!canScrollRight) {
-      var distance = sizeOfFullItems - (clientWidth - sizeOfFullItems) - singleChildrenMargin;
-      return distance;
+      return sizeOfFullItems - (clientWidth - sizeOfFullItems) - singleChildrenMargin;
     }
 
     return sizeOfFullItems;
@@ -214,17 +232,17 @@ var Slider = function Slider(_ref5) {
     slider.addEventListener('mousedown', function (e) {
       e.preventDefault();
       isDown = true;
-      setActiveClass(true);
+      setArrows(false);
       startX = e.pageX - slider.offsetLeft;
       scrollLeftChange = slider.scrollLeft;
     });
     slider.addEventListener('mouseleave', function (e) {
       isDown = false;
-      setActiveClass(false);
+      setArrows(true);
     });
     slider.addEventListener('mouseup', function (e) {
       isDown = false;
-      setActiveClass(false);
+      setArrows(true);
     });
     slider.addEventListener('mousemove', function (e) {
       if (isDown) {
@@ -237,32 +255,30 @@ var Slider = function Slider(_ref5) {
     });
   };
 
+  var returnArrow = function returnArrow(direction) {
+    return direction === 'left' ? '<' : '>';
+  };
+
   return _react["default"].createElement(StyledSlider, null, _react["default"].createElement(SliderContainer, {
-    activeClass: activeClass,
+    withGrab: withGrab,
     onClick: withGrab ? function (e) {
       return handleGrabbing(e);
     } : null,
     ref: container,
     id: "slider"
-  }, data), withArrows && _react["default"].createElement(ButtonGroup, null, _react["default"].createElement(ButtonLeft, {
+  }, data), arrows && _react["default"].createElement(ButtonGroup, null, _react["default"].createElement(ButtonLeft, {
     buttonSize: buttonSize,
     canScrollLeft: canScrollLeft,
     onClick: function onClick() {
-      return scrollContainerBy(-scrollDistance());
+      return scrollContainerBy(-scrollDistance(scrollBy));
     }
-  }, _react["default"].createElement(_reactFontawesome.FontAwesomeIcon, {
-    icon: _freeSolidSvgIcons.faChevronLeft,
-    size: "lg"
-  })), _react["default"].createElement(ButtonRight, {
+  }, _react["default"].createElement(Arrow, null, returnArrow('left'))), _react["default"].createElement(ButtonRight, {
     buttonSize: buttonSize,
     canScrollRight: canScrollRight,
     onClick: function onClick() {
-      return scrollContainerBy(scrollDistance());
+      return scrollContainerBy(scrollDistance(scrollBy));
     }
-  }, _react["default"].createElement(_reactFontawesome.FontAwesomeIcon, {
-    icon: _freeSolidSvgIcons.faChevronRight,
-    size: "lg"
-  }))));
+  }, _react["default"].createElement(Arrow, null, returnArrow('right')))));
 };
 
 var _default = Slider;
