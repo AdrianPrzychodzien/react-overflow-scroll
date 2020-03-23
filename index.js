@@ -197,15 +197,20 @@ var Slider = function Slider(_ref8) {
       canScrollRight = _useState8[0],
       setCanScrollRight = _useState8[1];
 
-  var _useState9 = (0, _react.useState)(),
+  var _useState9 = (0, _react.useState)(false),
       _useState10 = _slicedToArray(_useState9, 2),
-      dots = _useState10[0],
-      setDots = _useState10[1];
+      buttonDisabled = _useState10[0],
+      setButtonDisabled = _useState10[1];
 
-  var _useState11 = (0, _react.useState)(1),
+  var _useState11 = (0, _react.useState)(),
       _useState12 = _slicedToArray(_useState11, 2),
-      slide = _useState12[0],
-      setSlide = _useState12[1];
+      dots = _useState12[0],
+      setDots = _useState12[1];
+
+  var _useState13 = (0, _react.useState)(1),
+      _useState14 = _slicedToArray(_useState13, 2),
+      slide = _useState14[0],
+      setSlide = _useState14[1];
 
   var container = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
@@ -224,152 +229,20 @@ var Slider = function Slider(_ref8) {
           children = _container$current.children,
           clientWidth = _container$current.clientWidth;
       var fullItems = Math.floor(clientWidth / children[0].clientWidth);
-      var dotsNumber = Math.ceil(data.length / fullItems);
-      setDots(dotsNumber);
+
+      if (scrollBy !== undefined) {
+        var dotsNumber = Math.ceil(data.length / scrollBy);
+        setDots(dotsNumber);
+      } else {
+        var _dotsNumber = Math.ceil(data.length / fullItems);
+
+        setDots(_dotsNumber);
+      }
     };
 
     howManyDots();
   }, []);
-
-  var checkForScrollPosition = function checkForScrollPosition() {
-    var _container$current2 = container.current,
-        scrollLeft = _container$current2.scrollLeft,
-        scrollWidth = _container$current2.scrollWidth,
-        clientWidth = _container$current2.clientWidth;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft !== scrollWidth - clientWidth);
-  };
-
-  var checkForOverflow = function checkForOverflow() {
-    var _container$current3 = container.current,
-        scrollWidth = _container$current3.scrollWidth,
-        clientWidth = _container$current3.clientWidth;
-    var hasOverflow = scrollWidth > clientWidth;
-    setHasOverflow(hasOverflow);
-  };
-
-  var debounceCheckForOverflow = (0, _debounce["default"])(checkForOverflow, 200);
-  var debounceCheckForScrollPosition = (0, _debounce["default"])(checkForScrollPosition, 200);
-
-  var scrollContainerBy = function scrollContainerBy(distance) {
-    var _sizeOfFullItemsAndSi = sizeOfFullItemsAndSingleMargin(),
-        sizeOfFullItems = _sizeOfFullItemsAndSi.sizeOfFullItems,
-        singleChildrenMargin = _sizeOfFullItemsAndSi.singleChildrenMargin,
-        fullItems = _sizeOfFullItemsAndSi.fullItems;
-
-    var slider = container.current; // right button click
-
-    if (distance > 0) {
-      if (slider.scrollLeft <= distance - sizeOfFullItems) {
-        setSlide(2);
-      } else if (slider.scrollLeft <= distance) {
-        setSlide(3);
-      } else if (slider.scrollLeft <= distance * 2) {
-        setSlide(4);
-      } else if (slider.scrollLeft <= distance * 3) {
-        setSlide(5);
-      } else if (slider.scrollLeft <= distance * 4) {
-        setSlide(6);
-      } else if (slider.scrollLeft <= distance * 5) {
-        setSlide(7);
-      }
-    } // left button click
-
-
-    if (distance < 0) {
-      var num;
-
-      if (!canScrollRight) {
-        num = sizeOfFullItems - (slider.clientWidth - sizeOfFullItems) - singleChildrenMargin;
-      }
-
-      if (Math.abs(distance) === num) {
-        setSlide(slide - 1);
-      } else if (slider.scrollLeft) {
-        setSlide(slide - 1);
-      }
-    }
-
-    container.current.scrollBy({
-      left: distance,
-      behavior: "smooth"
-    });
-  };
-
-  var sizeOfFullItemsAndSingleMargin = function sizeOfFullItemsAndSingleMargin() {
-    var _container$current4 = container.current,
-        children = _container$current4.children,
-        clientWidth = _container$current4.clientWidth;
-    var fullItems = Math.floor(clientWidth / children[0].clientWidth); // calculate margin of single element
-
-    var nodeStyle = window.getComputedStyle(children[0]);
-    var mr = nodeStyle.marginRight;
-    var ml = nodeStyle.marginLeft;
-    var marginRight = mr.substring(0, mr.length - 2);
-    var marginLeft = ml.substring(0, ml.length - 2);
-    var singleChildrenMargin = +marginRight + +marginLeft;
-    var sizeOfFullItems = fullItems * (children[0].clientWidth + singleChildrenMargin);
-    return {
-      sizeOfFullItems: sizeOfFullItems,
-      singleChildrenMargin: singleChildrenMargin,
-      fullItems: fullItems
-    };
-  };
-
-  var scrollDistance = function scrollDistance(scrollBy) {
-    var _container$current5 = container.current,
-        children = _container$current5.children,
-        clientWidth = _container$current5.clientWidth;
-
-    var _sizeOfFullItemsAndSi2 = sizeOfFullItemsAndSingleMargin(),
-        sizeOfFullItems = _sizeOfFullItemsAndSi2.sizeOfFullItems,
-        singleChildrenMargin = _sizeOfFullItemsAndSi2.singleChildrenMargin,
-        fullItems = _sizeOfFullItemsAndSi2.fullItems; // if there is scrollBy prop
-
-
-    if (scrollBy) {
-      var userScrollBy = scrollBy * (children[0].clientWidth + singleChildrenMargin);
-
-      if (!canScrollRight) {
-        return sizeOfFullItems - (clientWidth - userScrollBy) - singleChildrenMargin;
-      }
-
-      return userScrollBy;
-    }
-
-    if (!canScrollRight) {
-      return sizeOfFullItems - (clientWidth - sizeOfFullItems) - singleChildrenMargin;
-    }
-
-    return sizeOfFullItems;
-  };
-
-  var changeDotAfterWalk = function changeDotAfterWalk(distance) {
-    var _sizeOfFullItemsAndSi3 = sizeOfFullItemsAndSingleMargin(),
-        sizeOfFullItems = _sizeOfFullItemsAndSi3.sizeOfFullItems,
-        singleChildrenMargin = _sizeOfFullItemsAndSi3.singleChildrenMargin,
-        fullItems = _sizeOfFullItemsAndSi3.fullItems; // TODO: scrollBy prop
-    // TODO: disable button
-
-
-    if (distance === 0) {
-      setSlide(1);
-    } else if (distance <= sizeOfFullItems) {
-      setSlide(2);
-    } else if (distance <= sizeOfFullItems * 2) {
-      setSlide(3);
-    } else if (distance <= sizeOfFullItems * 3) {
-      setSlide(4);
-    } else if (distance <= sizeOfFullItems * 4) {
-      setSlide(5);
-    } else if (distance <= sizeOfFullItems * 5) {
-      setSlide(6);
-    } else if (distance <= sizeOfFullItems * 6) {
-      setSlide(7);
-    }
-  };
-
-  var handleGrabbing = function handleGrabbing(e) {
+  (0, _react.useEffect)(function () {
     var slider = container.current;
     var isDown = false;
     var startX;
@@ -396,8 +269,133 @@ var Slider = function Slider(_ref8) {
       var walk = (x - startX) * 3; // scroll-fast
 
       slider.scrollLeft = scrollLeftLocal - walk;
-      changeDotAfterWalk(slider.scrollLeft);
+      changeSlideAfterMoving(slider.scrollLeft);
     });
+  }, []);
+
+  var checkForScrollPosition = function checkForScrollPosition() {
+    var _container$current2 = container.current,
+        scrollLeft = _container$current2.scrollLeft,
+        scrollWidth = _container$current2.scrollWidth,
+        clientWidth = _container$current2.clientWidth;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft !== scrollWidth - clientWidth);
+  };
+
+  var checkForOverflow = function checkForOverflow() {
+    var _container$current3 = container.current,
+        scrollWidth = _container$current3.scrollWidth,
+        clientWidth = _container$current3.clientWidth;
+    var hasOverflow = scrollWidth > clientWidth;
+    setHasOverflow(hasOverflow);
+  };
+
+  var debounceCheckForOverflow = (0, _debounce["default"])(checkForOverflow, 200);
+  var debounceCheckForScrollPosition = (0, _debounce["default"])(checkForScrollPosition, 200);
+
+  var changeSlideAfterMoving = function changeSlideAfterMoving(distance, e) {
+    var _sizeOfFullItemsAndSi = sizeOfFullItemsAndSingleMargin(),
+        sizeOfFullItems = _sizeOfFullItemsAndSi.sizeOfFullItems;
+
+    var slider = container.current; // right button click
+
+    if (distance >= 0) {
+      setButtonDisabled(true);
+
+      if (distance === 0) {
+        setSlide(1);
+      } else if (slider.scrollLeft < sizeOfFullItems) {
+        setSlide(2);
+      } else if (slider.scrollLeft < sizeOfFullItems * 2) {
+        setSlide(3);
+      } else if (slider.scrollLeft < sizeOfFullItems * 3) {
+        setSlide(4);
+      } else if (slider.scrollLeft < sizeOfFullItems * 4) {
+        setSlide(5);
+      } else if (slider.scrollLeft < sizeOfFullItems * 5) {
+        setSlide(6);
+      } else if (slider.scrollLeft < sizeOfFullItems * 6) {
+        setSlide(7);
+      }
+    } // left button click
+
+
+    if (distance < 0) {
+      setButtonDisabled(true);
+      setSlide(slide - 1);
+    }
+
+    if (e) {
+      container.current.scrollBy({
+        left: distance,
+        behavior: "smooth"
+      });
+      setTimeout(function () {
+        return setButtonDisabled(false);
+      }, 500);
+    }
+
+    setButtonDisabled(false);
+  };
+
+  var sizeOfFullItemsAndSingleMargin = function sizeOfFullItemsAndSingleMargin() {
+    var _container$current4 = container.current,
+        children = _container$current4.children,
+        clientWidth = _container$current4.clientWidth;
+    var fullItems = Math.floor(clientWidth / children[0].clientWidth); // calculate margin of single element
+
+    var nodeStyle = window.getComputedStyle(children[0]);
+    var mr = nodeStyle.marginRight;
+    var ml = nodeStyle.marginLeft;
+    var marginRight = mr.substring(0, mr.length - 2);
+    var marginLeft = ml.substring(0, ml.length - 2);
+    var singleChildMargin = +marginRight + +marginLeft;
+    var sizeOfFullItems = fullItems * (children[0].clientWidth + singleChildMargin);
+
+    if (scrollBy !== undefined) {
+      var _sizeOfFullItems = scrollBy * (children[0].clientWidth + singleChildMargin);
+
+      return {
+        sizeOfFullItems: _sizeOfFullItems,
+        singleChildMargin: singleChildMargin,
+        scrollBy: scrollBy
+      };
+    }
+
+    return {
+      sizeOfFullItems: sizeOfFullItems,
+      singleChildMargin: singleChildMargin,
+      fullItems: fullItems
+    };
+  };
+
+  var scrollDistance = function scrollDistance(scrollBy) {
+    var _container$current5 = container.current,
+        children = _container$current5.children,
+        clientWidth = _container$current5.clientWidth;
+
+    var _sizeOfFullItemsAndSi2 = sizeOfFullItemsAndSingleMargin(),
+        sizeOfFullItems = _sizeOfFullItemsAndSi2.sizeOfFullItems,
+        singleChildMargin = _sizeOfFullItemsAndSi2.singleChildMargin,
+        fullItems = _sizeOfFullItemsAndSi2.fullItems; // if there is scrollBy prop
+
+
+    if (scrollBy) {
+      var userScrollBy = scrollBy * (children[0].clientWidth + singleChildMargin);
+
+      if (!canScrollRight) {
+        return sizeOfFullItems - (clientWidth - userScrollBy) - singleChildMargin;
+      }
+
+      return userScrollBy;
+    }
+
+    if (!canScrollRight) {
+      var distance = sizeOfFullItems - (clientWidth - sizeOfFullItems) - singleChildMargin;
+      return distance;
+    }
+
+    return sizeOfFullItems;
   };
 
   var returnArrow = function returnArrow(direction) {
@@ -406,21 +404,20 @@ var Slider = function Slider(_ref8) {
 
   return _react["default"].createElement(_react["default"].Fragment, null, _react["default"].createElement(StyledSlider, null, _react["default"].createElement(SliderContainer, {
     withGrab: withGrab,
-    onClick: withGrab ? function (e) {
-      return handleGrabbing(e);
-    } : null,
     ref: container
-  }, data), arrows && _react["default"].createElement(ButtonGroup, null, _react["default"].createElement(ButtonLeft, {
+  }, data), withArrows && _react["default"].createElement(ButtonGroup, null, _react["default"].createElement(ButtonLeft, {
+    disabled: buttonDisabled,
     buttonSize: buttonSize,
     canScrollLeft: canScrollLeft,
-    onClick: function onClick() {
-      return scrollContainerBy(-scrollDistance(scrollBy));
+    onClick: function onClick(e) {
+      return changeSlideAfterMoving(-scrollDistance(scrollBy), e);
     }
   }, _react["default"].createElement(Arrow, null, returnArrow('left'))), _react["default"].createElement(ButtonRight, {
+    disabled: buttonDisabled,
     buttonSize: buttonSize,
     canScrollRight: canScrollRight,
-    onClick: function onClick() {
-      return scrollContainerBy(scrollDistance(scrollBy));
+    onClick: function onClick(e) {
+      return changeSlideAfterMoving(scrollDistance(scrollBy), e);
     }
   }, _react["default"].createElement(Arrow, null, returnArrow('right'))))), withDots && _react["default"].createElement(DotsGroup, {
     slide: slide
