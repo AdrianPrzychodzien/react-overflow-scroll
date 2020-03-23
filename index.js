@@ -66,7 +66,7 @@ function _templateObject7() {
 }
 
 function _templateObject6() {
-  var data = _taggedTemplateLiteral(["\n  ::-webkit-scrollbar {\n    width: 0px;\n  }\n  scrollbar-width: none;\n  -ms-overflow-style: none;\n  display: flex;\n  overflow: auto;\n  cursor: ", ";\n  ", ";\n"]);
+  var data = _taggedTemplateLiteral(["\n  ::-webkit-scrollbar {\n    width: 0px;\n  };\n  scrollbar-width: none;\n  -ms-overflow-style: none;\n  display: flex;\n  overflow: auto;\n  transition: all 0.3s;\n  ", ";\n  cursor: ", ";\n  ", ";\n"]);
 
   _templateObject6 = function _templateObject6() {
     return data;
@@ -149,33 +149,38 @@ var ButtonRight = (0, _styledComponents["default"])(Button)(_templateObject4(), 
 var Arrow = _styledComponents["default"].div(_templateObject5());
 
 var SliderContainer = _styledComponents["default"].div(_templateObject6(), function (_ref5) {
-  var withGrab = _ref5.withGrab;
-  return withGrab ? "grabbing" : "pointer";
+  var active = _ref5.active;
+  return active.active ? "transform: scale(".concat(active.scale, ")") : "";
 }, function (_ref6) {
   var withGrab = _ref6.withGrab;
+  return withGrab ? "grabbing" : "pointer";
+}, function (_ref7) {
+  var withGrab = _ref7.withGrab;
   return withGrab ? "cursor: -webkit-grabbing" : "";
 });
 
 var StyledSlider = _styledComponents["default"].div(_templateObject7(), ButtonRight, ButtonLeft);
 
-var DotsGroup = _styledComponents["default"].div(_templateObject8(), function (_ref7) {
-  var slide = _ref7.slide;
+var DotsGroup = _styledComponents["default"].div(_templateObject8(), function (_ref8) {
+  var slide = _ref8.slide;
   return slide ? "&:nth-child(2) div {\n      &:nth-child(".concat(slide, ") {\n      transition: all 0.3s linear;\n      transform: scale(1.5)\n    }\n  }") : null;
 });
 
 var Dot = _styledComponents["default"].div(_templateObject9());
 
-var Slider = function Slider(_ref8) {
-  var data = _ref8.data,
-      _ref8$withArrows = _ref8.withArrows,
-      withArrows = _ref8$withArrows === void 0 ? true : _ref8$withArrows,
-      _ref8$withGrab = _ref8.withGrab,
-      withGrab = _ref8$withGrab === void 0 ? false : _ref8$withGrab,
-      _ref8$buttonSize = _ref8.buttonSize,
-      buttonSize = _ref8$buttonSize === void 0 ? '0.8rem 1.2rem' : _ref8$buttonSize,
-      scrollBy = _ref8.scrollBy,
-      _ref8$withDots = _ref8.withDots,
-      withDots = _ref8$withDots === void 0 ? false : _ref8$withDots;
+var Slider = function Slider(_ref9) {
+  var data = _ref9.data,
+      _ref9$withArrows = _ref9.withArrows,
+      withArrows = _ref9$withArrows === void 0 ? true : _ref9$withArrows,
+      _ref9$withGrab = _ref9.withGrab,
+      withGrab = _ref9$withGrab === void 0 ? false : _ref9$withGrab,
+      _ref9$buttonSize = _ref9.buttonSize,
+      buttonSize = _ref9$buttonSize === void 0 ? '0.8rem 1.2rem' : _ref9$buttonSize,
+      scrollBy = _ref9.scrollBy,
+      _ref9$withDots = _ref9.withDots,
+      withDots = _ref9$withDots === void 0 ? false : _ref9$withDots,
+      _ref9$withScale = _ref9.withScale,
+      withScale = _ref9$withScale === void 0 ? 'md' : _ref9$withScale;
 
   var _useState = (0, _react.useState)(withArrows),
       _useState2 = _slicedToArray(_useState, 2),
@@ -211,6 +216,11 @@ var Slider = function Slider(_ref8) {
       _useState14 = _slicedToArray(_useState13, 2),
       slide = _useState14[0],
       setSlide = _useState14[1];
+
+  var _useState15 = (0, _react.useState)(),
+      _useState16 = _slicedToArray(_useState15, 2),
+      active = _useState16[0],
+      setActive = _useState16[1];
 
   var container = (0, _react.useRef)(null);
   (0, _react.useEffect)(function () {
@@ -251,16 +261,19 @@ var Slider = function Slider(_ref8) {
       e.preventDefault();
       isDown = true;
       setArrows(false);
+      setActive(true);
       startX = e.pageX - slider.offsetLeft;
       scrollLeftLocal = slider.scrollLeft;
     });
     slider.addEventListener('mouseleave', function (e) {
       isDown = false;
       setArrows(true);
+      setActive(false);
     });
     slider.addEventListener('mouseup', function (e) {
       isDown = false;
       setArrows(true);
+      setActive(false);
     });
     slider.addEventListener('mousemove', function (e) {
       if (!isDown) return;
@@ -304,17 +317,17 @@ var Slider = function Slider(_ref8) {
 
       if (distance === 0) {
         setSlide(1);
-      } else if (slider.scrollLeft < sizeOfFullItems) {
+      } else if (slider.scrollLeft >= 0 && slider.scrollLeft < sizeOfFullItems) {
         setSlide(2);
-      } else if (slider.scrollLeft < sizeOfFullItems * 2) {
+      } else if (slider.scrollLeft >= sizeOfFullItems && slider.scrollLeft < sizeOfFullItems * 2) {
         setSlide(3);
-      } else if (slider.scrollLeft < sizeOfFullItems * 3) {
+      } else if (slider.scrollLeft >= sizeOfFullItems * 2 && slider.scrollLeft < sizeOfFullItems * 3) {
         setSlide(4);
-      } else if (slider.scrollLeft < sizeOfFullItems * 4) {
+      } else if (slider.scrollLeft >= sizeOfFullItems * 3 && slider.scrollLeft < sizeOfFullItems * 4) {
         setSlide(5);
-      } else if (slider.scrollLeft < sizeOfFullItems * 5) {
+      } else if (slider.scrollLeft >= sizeOfFullItems * 4 && slider.scrollLeft < sizeOfFullItems * 5) {
         setSlide(6);
-      } else if (slider.scrollLeft < sizeOfFullItems * 6) {
+      } else if (slider.scrollLeft >= sizeOfFullItems * 5 && slider.scrollLeft < sizeOfFullItems * 6) {
         setSlide(7);
       }
     } // left button click
@@ -402,7 +415,33 @@ var Slider = function Slider(_ref8) {
     return direction === 'left' ? '<' : '>';
   };
 
+  var returnScale = function returnScale(size) {
+    switch (size) {
+      case 'xs':
+        return 0.9;
+
+      case 'sm':
+        return 0.95;
+
+      case 'md':
+        return 1;
+
+      case 'lg':
+        return 1.05;
+
+      case 'xl':
+        return 1.1;
+
+      default:
+        return 1;
+    }
+  };
+
   return _react["default"].createElement(_react["default"].Fragment, null, _react["default"].createElement(StyledSlider, null, _react["default"].createElement(SliderContainer, {
+    active: {
+      active: active,
+      scale: returnScale(withScale)
+    },
     withGrab: withGrab,
     ref: container
   }, data), withArrows && _react["default"].createElement(ButtonGroup, null, _react["default"].createElement(ButtonLeft, {
