@@ -85,7 +85,8 @@ const Dot = styled.div`
 
 const Slider = ({
   data, withArrows = true, withGrab = false,
-  buttonSize = '0.8rem 1.2rem', scrollBy, scrollTo, withDots = false,
+  buttonSize = '0.8rem 1.2rem', scrollBy,
+  scrollToClick = false, scrollToChild, withDots = false,
   withScale = 'md'
 }) => {
   const [arrows, setArrows] = useState(withArrows)
@@ -97,7 +98,6 @@ const Slider = ({
   const [slide, setSlide] = useState(1)
   const [active, setActive] = useState()
   const [actualDistanceFromLeft, setActualDistanceFromLeft] = useState(0) // ??
-  // console.log(actualDistanceFromLeft)
 
   const container = useRef(null);
 
@@ -173,6 +173,12 @@ const Slider = ({
     })
   }, [])
 
+  useEffect(() => {
+    if (scrollToClick) {
+      _scrollToChild(scrollToChild)
+    }
+  }, [scrollToClick])
+
   const checkForScrollPosition = () => {
     const { scrollLeft, scrollWidth, clientWidth } = container.current;
     setCanScrollLeft(scrollLeft > 0);
@@ -193,6 +199,7 @@ const Slider = ({
     if (distance >= 0) {
       setButtonDisabled(true)
       returnActualSlide(actualDistanceFromLeft + distance)
+      setActualDistanceFromLeft(actualDistanceFromLeft + distance)
     }
     // left button click
     if (distance < 0) {
@@ -229,21 +236,22 @@ const Slider = ({
     return { sizeOfFullItems, singleChildMargin, fullItems }
   }
 
-  const _scrollTo = (scrollBy) => {
+  const _scrollToChild = scrollBy => {
     let slider = container.current
     const { children } = container.current;
-    const { sizeOfFullItems, singleChildMargin } = sizeOfFullItemsAndSingleMargin()
+    const { singleChildMargin } = sizeOfFullItemsAndSingleMargin()
 
     let distance = scrollBy * (children[0].clientWidth + singleChildMargin);
     let moveSliderBy = distance - slider.scrollLeft
     container.current.scrollBy({ left: moveSliderBy, behavior: "smooth" });
 
     returnActualSlide(distance)
+    setActualDistanceFromLeft(distance)
   }
 
   const scrollDistance = (scrollBy) => {
     const { children, clientWidth } = container.current;
-    const { sizeOfFullItems, singleChildMargin, fullItems } = sizeOfFullItemsAndSingleMargin()
+    const { sizeOfFullItems, singleChildMargin } = sizeOfFullItemsAndSingleMargin()
 
     // if there is scrollBy prop
     if (scrollBy) {
@@ -282,22 +290,32 @@ const Slider = ({
   }
 
   const returnActualSlide = distance => {
+    const { scrollWidth, clientWidth } = container.current;
     const { sizeOfFullItems } = sizeOfFullItemsAndSingleMargin()
+    let sliderSize = scrollWidth - clientWidth
 
-    if (distance <= 0) {
-      setSlide(1)
-    } else if (distance <= sizeOfFullItems) {
-      setSlide(2)
-    } else if (distance > sizeOfFullItems && distance <= sizeOfFullItems * 2) {
-      setSlide(3)
-    } else if (distance > sizeOfFullItems * 2 && distance <= sizeOfFullItems * 3) {
-      setSlide(4)
-    } else if (distance > sizeOfFullItems * 3 && distance <= sizeOfFullItems * 4) {
-      setSlide(5)
-    } else if (distance > sizeOfFullItems * 4 && distance <= sizeOfFullItems * 5) {
-      setSlide(6)
-    } else if (distance > sizeOfFullItems * 5 && distance <= sizeOfFullItems * 6) {
-      setSlide(7)
+    if (distance <= sliderSize) {
+      if (distance <= 0) {
+        setSlide(1)
+      } else if (distance <= sizeOfFullItems) {
+        setSlide(2)
+      } else if (distance > sizeOfFullItems && distance <= sizeOfFullItems * 2) {
+        setSlide(3)
+      } else if (distance > sizeOfFullItems * 2 && distance <= sizeOfFullItems * 3) {
+        setSlide(4)
+      } else if (distance > sizeOfFullItems * 3 && distance <= sizeOfFullItems * 4) {
+        setSlide(5)
+      } else if (distance > sizeOfFullItems * 4 && distance <= sizeOfFullItems * 5) {
+        setSlide(6)
+      } else if (distance > sizeOfFullItems * 5 && distance <= sizeOfFullItems * 6) {
+        setSlide(7)
+      } else if (distance > sizeOfFullItems * 6 && distance <= sizeOfFullItems * 7) {
+        setSlide(8)
+      } else if (distance > sizeOfFullItems * 7 && distance <= sizeOfFullItems * 8) {
+        setSlide(9)
+      }
+    } else {
+      return
     }
   }
 
@@ -341,7 +359,6 @@ const Slider = ({
           })}
         </DotsGroup>
       )}
-      <button onClick={() => _scrollTo(scrollTo)}>AAAAAAAAAAAAAAAAAA</button>
     </>
   );
 };
