@@ -35,11 +35,13 @@ const Arrow = styled.div`
 const SliderContainer = styled.div`
   ::-webkit-scrollbar {
     width: 0px;
-  }
+  };
   scrollbar-width: none;
   -ms-overflow-style: none;
   display: flex;
   overflow: auto;
+  transition: all 0.3s;
+  ${({ active }) => active.active ? `transform: scale(${active.scale})` : ``};
   cursor: ${({ withGrab }) => withGrab ? `grabbing` : `pointer`};
   ${({ withGrab }) => withGrab ? `cursor: -webkit-grabbing` : ``};
 `
@@ -81,7 +83,11 @@ const Dot = styled.div`
   }
 `
 
-const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8rem 1.2rem', scrollBy, withDots = false }) => {
+const Slider = ({
+  data, withArrows = true, withGrab = false,
+  buttonSize = '0.8rem 1.2rem', scrollBy, withDots = false,
+  withScale = 'md'
+}) => {
   const [arrows, setArrows] = useState(withArrows)
   const [hasOverflow, setHasOverflow] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -89,6 +95,7 @@ const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8re
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [dots, setDots] = useState();
   const [slide, setSlide] = useState(1)
+  const [active, setActive] = useState()
 
   const container = useRef(null);
 
@@ -138,16 +145,19 @@ const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8re
       e.preventDefault()
       isDown = true
       setArrows(false)
+      setActive(true)
       startX = e.pageX - slider.offsetLeft
       scrollLeftLocal = slider.scrollLeft
     })
     slider.addEventListener('mouseleave', e => {
       isDown = false
       setArrows(true)
+      setActive(false)
     })
     slider.addEventListener('mouseup', e => {
       isDown = false
       setArrows(true)
+      setActive(false)
     })
     slider.addEventListener('mousemove', e => {
       if (!isDown) return
@@ -180,19 +190,20 @@ const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8re
     // right button click
     if (distance >= 0) {
       setButtonDisabled(true)
+
       if (distance === 0) {
         setSlide(1)
-      } else if (slider.scrollLeft < sizeOfFullItems) {
+      } else if (slider.scrollLeft >= 0 && slider.scrollLeft < sizeOfFullItems) {
         setSlide(2)
-      } else if (slider.scrollLeft < sizeOfFullItems * 2) {
+      } else if (slider.scrollLeft >= sizeOfFullItems && slider.scrollLeft < sizeOfFullItems * 2) {
         setSlide(3)
-      } else if (slider.scrollLeft < sizeOfFullItems * 3) {
+      } else if (slider.scrollLeft >= sizeOfFullItems * 2 && slider.scrollLeft < sizeOfFullItems * 3) {
         setSlide(4)
-      } else if (slider.scrollLeft < sizeOfFullItems * 4) {
+      } else if (slider.scrollLeft >= sizeOfFullItems * 3 && slider.scrollLeft < sizeOfFullItems * 4) {
         setSlide(5)
-      } else if (slider.scrollLeft < sizeOfFullItems * 5) {
+      } else if (slider.scrollLeft >= sizeOfFullItems * 4 && slider.scrollLeft < sizeOfFullItems * 5) {
         setSlide(6)
-      } else if (slider.scrollLeft < sizeOfFullItems * 6) {
+      } else if (slider.scrollLeft >= sizeOfFullItems * 5 && slider.scrollLeft < sizeOfFullItems * 6) {
         setSlide(7)
       }
     }
@@ -260,10 +271,28 @@ const Slider = ({ data, withArrows = true, withGrab = false, buttonSize = '0.8re
 
   const returnArrow = direction => direction === 'left' ? '<' : '>'
 
+  const returnScale = size => {
+    switch (size) {
+      case 'xs':
+        return 0.9;
+      case 'sm':
+        return 0.95;
+      case 'md':
+        return 1;
+      case 'lg':
+        return 1.05;
+      case 'xl':
+        return 1.1
+      default:
+        return 1
+    }
+  }
+
   return (
     <>
       <StyledSlider>
         <SliderContainer
+          active={{ active, scale: returnScale(withScale) }}
           withGrab={withGrab}
           ref={container}
         >
