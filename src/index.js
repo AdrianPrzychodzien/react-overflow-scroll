@@ -85,7 +85,7 @@ const Dot = styled.div`
 
 const Slider = ({
   data, withArrows = true, withGrab = false,
-  buttonSize = '0.8rem 1.2rem', scrollBy, withDots = false,
+  buttonSize = '0.8rem 1.2rem', scrollBy, scrollTo, withDots = false,
   withScale = 'md'
 }) => {
   const [arrows, setArrows] = useState(withArrows)
@@ -96,6 +96,8 @@ const Slider = ({
   const [dots, setDots] = useState();
   const [slide, setSlide] = useState(1)
   const [active, setActive] = useState()
+  const [actualDistanceFromLeft, setActualDistanceFromLeft] = useState(0) // ??
+  // console.log(actualDistanceFromLeft)
 
   const container = useRef(null);
 
@@ -166,7 +168,8 @@ const Slider = ({
       const walk = (x - startX) * 3 // scroll-fast
       slider.scrollLeft = scrollLeftLocal - walk
 
-      changeSlideAfterMoving(slider.scrollLeft)
+      setActualDistanceFromLeft(scrollLeftLocal - walk)
+      returnActualSlide(scrollLeftLocal - walk)
     })
   }, [])
 
@@ -183,42 +186,22 @@ const Slider = ({
   const debounceCheckForOverflow = debounce(checkForOverflow, 200);
   const debounceCheckForScrollPosition = debounce(checkForScrollPosition, 200);
 
-  const changeSlideAfterMoving = (distance, e) => {
-    const { sizeOfFullItems } = sizeOfFullItemsAndSingleMargin()
-    let slider = container.current
+  const changeSlideAfterClick = (distance, e) => {
+    setActualDistanceFromLeft(actualDistanceFromLeft + distance)
 
     // right button click
     if (distance >= 0) {
       setButtonDisabled(true)
-
-      if (distance === 0) {
-        setSlide(1)
-      } else if (slider.scrollLeft >= 0 && slider.scrollLeft < sizeOfFullItems) {
-        setSlide(2)
-      } else if (slider.scrollLeft >= sizeOfFullItems && slider.scrollLeft < sizeOfFullItems * 2) {
-        setSlide(3)
-      } else if (slider.scrollLeft >= sizeOfFullItems * 2 && slider.scrollLeft < sizeOfFullItems * 3) {
-        setSlide(4)
-      } else if (slider.scrollLeft >= sizeOfFullItems * 3 && slider.scrollLeft < sizeOfFullItems * 4) {
-        setSlide(5)
-      } else if (slider.scrollLeft >= sizeOfFullItems * 4 && slider.scrollLeft < sizeOfFullItems * 5) {
-        setSlide(6)
-      } else if (slider.scrollLeft >= sizeOfFullItems * 5 && slider.scrollLeft < sizeOfFullItems * 6) {
-        setSlide(7)
-      }
+      returnActualSlide(actualDistanceFromLeft + distance)
     }
-
     // left button click
     if (distance < 0) {
       setButtonDisabled(true)
       setSlide(slide - 1)
     }
 
-    if (e) {
-      container.current.scrollBy({ left: distance, behavior: "smooth" });
-      setTimeout(() => setButtonDisabled(false), 500)
-    }
-    setButtonDisabled(false)
+    container.current.scrollBy({ left: distance, behavior: "smooth" });
+    setTimeout(() => setButtonDisabled(false), 500)
   }
 
   const sizeOfFullItemsAndSingleMargin = () => {
@@ -246,6 +229,18 @@ const Slider = ({
     return { sizeOfFullItems, singleChildMargin, fullItems }
   }
 
+  const _scrollTo = (scrollBy) => {
+    let slider = container.current
+    const { children } = container.current;
+    const { sizeOfFullItems, singleChildMargin } = sizeOfFullItemsAndSingleMargin()
+
+    let distance = scrollBy * (children[0].clientWidth + singleChildMargin);
+    let moveSliderBy = distance - slider.scrollLeft
+    container.current.scrollBy({ left: moveSliderBy, behavior: "smooth" });
+
+    returnActualSlide(distance)
+  }
+
   const scrollDistance = (scrollBy) => {
     const { children, clientWidth } = container.current;
     const { sizeOfFullItems, singleChildMargin, fullItems } = sizeOfFullItemsAndSingleMargin()
@@ -269,8 +264,6 @@ const Slider = ({
     return sizeOfFullItems;
   };
 
-  const returnArrow = direction => direction === 'left' ? '<' : '>'
-
   const returnScale = size => {
     switch (size) {
       case 'xs':
@@ -288,6 +281,28 @@ const Slider = ({
     }
   }
 
+  const returnActualSlide = distance => {
+    const { sizeOfFullItems } = sizeOfFullItemsAndSingleMargin()
+
+    if (distance <= 0) {
+      setSlide(1)
+    } else if (distance <= sizeOfFullItems) {
+      setSlide(2)
+    } else if (distance > sizeOfFullItems && distance <= sizeOfFullItems * 2) {
+      setSlide(3)
+    } else if (distance > sizeOfFullItems * 2 && distance <= sizeOfFullItems * 3) {
+      setSlide(4)
+    } else if (distance > sizeOfFullItems * 3 && distance <= sizeOfFullItems * 4) {
+      setSlide(5)
+    } else if (distance > sizeOfFullItems * 4 && distance <= sizeOfFullItems * 5) {
+      setSlide(6)
+    } else if (distance > sizeOfFullItems * 5 && distance <= sizeOfFullItems * 6) {
+      setSlide(7)
+    }
+  }
+
+  const returnArrow = direction => direction === 'left' ? '<' : '>'
+
   return (
     <>
       <StyledSlider>
@@ -304,7 +319,7 @@ const Slider = ({
               disabled={buttonDisabled}
               buttonSize={buttonSize}
               canScrollLeft={canScrollLeft}
-              onClick={e => changeSlideAfterMoving(-scrollDistance(scrollBy), e)}
+              onClick={e => changeSlideAfterClick(-scrollDistance(scrollBy), e)}
             >
               <Arrow>{returnArrow('left')}</Arrow>
             </ButtonLeft>
@@ -312,7 +327,7 @@ const Slider = ({
               disabled={buttonDisabled}
               buttonSize={buttonSize}
               canScrollRight={canScrollRight}
-              onClick={e => changeSlideAfterMoving(scrollDistance(scrollBy), e)}
+              onClick={e => changeSlideAfterClick(scrollDistance(scrollBy), e)}
             >
               <Arrow>{returnArrow('right')}</Arrow>
             </ButtonRight>
@@ -326,6 +341,7 @@ const Slider = ({
           })}
         </DotsGroup>
       )}
+      <button onClick={() => _scrollTo(scrollTo)}>AAAAAAAAAAAAAAAAAA</button>
     </>
   );
 };
