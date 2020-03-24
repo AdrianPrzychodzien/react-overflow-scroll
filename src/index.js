@@ -4,13 +4,16 @@ import debounce from "lodash/debounce";
 
 const ButtonGroup = styled.div`
   width: 100%;
+  height: 0px;
   display: flex;
   position: absolute;
   top: 50%;
 `;
 const Button = styled.button`
-  opacity: 0;
+  height: 40px;
+  opacity: 1;
   border: 2px solid gray;
+  padding: 0.8rem 1.2rem;
   outline: none;
   transform: translateY(-50%);
   transition: all 0.2s linear;
@@ -19,18 +22,20 @@ const Button = styled.button`
   }
 `;
 const ButtonLeft = styled(Button)`
-  display: ${({ canScrollLeft }) => (canScrollLeft ? `block` : `none`)};
+  display: ${({ canScrollLeft }) => canScrollLeft ? `block` : `none`};
   margin-right: auto;
-  padding: ${({ buttonSize }) => buttonSize}
 `;
 const ButtonRight = styled(Button)`
-  display: ${({ canScrollRight }) => (canScrollRight ? `block` : `none`)};
+  display: ${({ canScrollRight }) => canScrollRight ? `block` : `none`};
   margin-left: auto;
-  padding: ${({ buttonSize }) => buttonSize}
 `;
 const Arrow = styled.div`
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 600;
-  transform: scale(1.5, 2)
+  transform: scale(1.5, 2);
 `
 const SliderContainer = styled.div`
   ::-webkit-scrollbar {
@@ -84,9 +89,10 @@ const Dot = styled.div`
 `
 
 const Slider = ({
-  data, withArrows = true, withGrab = false,
-  buttonSize = '0.8rem 1.2rem', scrollBy,
-  scrollToClick = false, scrollToChild, withDots = false,
+  sliderStyle, buttonsStyle,
+  data,
+  withArrows = true, withGrab = false, withDots = false,
+  scrollBy, scrollToClick = false, scrollToChild,
   withScale = 'md'
 }) => {
   const [arrows, setArrows] = useState(withArrows)
@@ -97,7 +103,7 @@ const Slider = ({
   const [dots, setDots] = useState();
   const [slide, setSlide] = useState(1)
   const [active, setActive] = useState()
-  const [actualDistanceFromLeft, setActualDistanceFromLeft] = useState(0) // ??
+  const [actualDistanceFromLeft, setActualDistanceFromLeft] = useState(0)
 
   const container = useRef(null);
 
@@ -175,7 +181,7 @@ const Slider = ({
 
   useEffect(() => {
     if (scrollToClick) {
-      _scrollToChild(scrollToChild)
+      scrollToChildProp(scrollToChild)
     }
   }, [scrollToClick])
 
@@ -211,6 +217,19 @@ const Slider = ({
     setTimeout(() => setButtonDisabled(false), 500)
   }
 
+  const scrollToChildProp = scrollBy => {
+    let slider = container.current
+    const { children } = container.current;
+    const { singleChildMargin } = sizeOfFullItemsAndSingleMargin()
+
+    let distance = (scrollBy - 1) * (children[0].clientWidth + singleChildMargin);
+    let moveSliderBy = distance - slider.scrollLeft
+    container.current.scrollBy({ left: moveSliderBy, behavior: "smooth" });
+
+    returnActualSlide(distance)
+    setActualDistanceFromLeft(distance)
+  }
+
   const sizeOfFullItemsAndSingleMargin = () => {
     const { children, clientWidth } = container.current;
     let fullItems = Math.floor(clientWidth / children[0].clientWidth);
@@ -234,19 +253,6 @@ const Slider = ({
     }
 
     return { sizeOfFullItems, singleChildMargin, fullItems }
-  }
-
-  const _scrollToChild = scrollBy => {
-    let slider = container.current
-    const { children } = container.current;
-    const { singleChildMargin } = sizeOfFullItemsAndSingleMargin()
-
-    let distance = scrollBy * (children[0].clientWidth + singleChildMargin);
-    let moveSliderBy = distance - slider.scrollLeft
-    container.current.scrollBy({ left: moveSliderBy, behavior: "smooth" });
-
-    returnActualSlide(distance)
-    setActualDistanceFromLeft(distance)
   }
 
   const scrollDistance = (scrollBy) => {
@@ -325,6 +331,7 @@ const Slider = ({
     <>
       <StyledSlider>
         <SliderContainer
+          style={sliderStyle}
           active={{ active, scale: returnScale(withScale) }}
           withGrab={withGrab}
           ref={container}
@@ -332,18 +339,18 @@ const Slider = ({
           {data}
         </SliderContainer>
         {withArrows && (
-          <ButtonGroup >
+          <ButtonGroup>
             <ButtonLeft
+              style={buttonsStyle}
               disabled={buttonDisabled}
-              buttonSize={buttonSize}
               canScrollLeft={canScrollLeft}
               onClick={e => changeSlideAfterClick(-scrollDistance(scrollBy), e)}
             >
               <Arrow>{returnArrow('left')}</Arrow>
             </ButtonLeft>
             <ButtonRight
+              style={buttonsStyle}
               disabled={buttonDisabled}
-              buttonSize={buttonSize}
               canScrollRight={canScrollRight}
               onClick={e => changeSlideAfterClick(scrollDistance(scrollBy), e)}
             >
