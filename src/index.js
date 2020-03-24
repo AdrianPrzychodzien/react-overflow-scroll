@@ -11,7 +11,7 @@ const ButtonGroup = styled.div`
 `;
 const Button = styled.button`
   height: 40px;
-  opacity: 1;
+  opacity: 0;
   border: 2px solid gray;
   padding: 0.8rem 1.2rem;
   outline: none;
@@ -89,9 +89,9 @@ const Dot = styled.div`
 `
 
 const Slider = ({
-  sliderStyle, buttonsStyle,
-  data,
+  data, sliderStyle, buttonsStyle,
   withArrows = true, withGrab = false, withDots = false,
+  arrowLeft, arrowRight,
   scrollBy, scrollToClick = false, scrollToChild,
   withScale = 'md'
 }) => {
@@ -131,8 +131,15 @@ const Slider = ({
       const { children, clientWidth } = container.current;
       let fullItems = Math.floor(clientWidth / children[0].clientWidth);
 
-      if (scrollBy !== undefined) {
+      if (scrollBy > 1) {
         const dotsNumber = Math.ceil(data.length / scrollBy);
+        if (fullItems - scrollBy > 4) { // because can`t scroll last slide more than 1
+          setDots(dotsNumber - 3); return
+        } else if (fullItems - scrollBy > 2) {
+          setDots(dotsNumber - 2); return
+        } else if (fullItems - scrollBy <= 2) {
+          setDots(dotsNumber - 1); return
+        }
         setDots(dotsNumber)
       } else {
         const dotsNumber = Math.ceil(data.length / fullItems);
@@ -172,10 +179,11 @@ const Slider = ({
       e.preventDefault()
       const x = e.pageX - slider.offsetLeft
       const walk = (x - startX) * 3 // scroll-fast
-      slider.scrollLeft = scrollLeftLocal - walk
+      const distance = scrollLeftLocal - walk
+      slider.scrollLeft = distance
 
-      setActualDistanceFromLeft(scrollLeftLocal - walk)
-      returnActualSlide(scrollLeftLocal - walk)
+      setActualDistanceFromLeft(distance)
+      returnActualSlide(distance)
     })
   }, [])
 
@@ -199,13 +207,15 @@ const Slider = ({
   const debounceCheckForScrollPosition = debounce(checkForScrollPosition, 200);
 
   const changeSlideAfterClick = (distance, e) => {
-    setActualDistanceFromLeft(actualDistanceFromLeft + distance)
+    let newDistance = actualDistanceFromLeft + distance
+
+    setActualDistanceFromLeft(newDistance)
 
     // right button click
     if (distance >= 0) {
       setButtonDisabled(true)
-      returnActualSlide(actualDistanceFromLeft + distance)
-      setActualDistanceFromLeft(actualDistanceFromLeft + distance)
+      returnActualSlide(newDistance, e)
+      setActualDistanceFromLeft(newDistance)
     }
     // left button click
     if (distance < 0) {
@@ -218,13 +228,11 @@ const Slider = ({
   }
 
   const scrollToChildProp = scrollBy => {
-    let slider = container.current
     const { children } = container.current;
     const { singleChildMargin } = sizeOfFullItemsAndSingleMargin()
 
     let distance = (scrollBy - 1) * (children[0].clientWidth + singleChildMargin);
-    let moveSliderBy = distance - slider.scrollLeft
-    container.current.scrollBy({ left: moveSliderBy, behavior: "smooth" });
+    container.current.scroll({ left: distance, behavior: "smooth" });
 
     returnActualSlide(distance)
     setActualDistanceFromLeft(distance)
@@ -246,7 +254,7 @@ const Slider = ({
     let sizeOfFullItems =
       fullItems * (children[0].clientWidth + singleChildMargin);
 
-    if (scrollBy !== undefined) {
+    if (scrollBy > 1) {
       let sizeOfFullItems =
         scrollBy * (children[0].clientWidth + singleChildMargin);
       return { sizeOfFullItems, singleChildMargin, scrollBy }
@@ -295,12 +303,18 @@ const Slider = ({
     }
   }
 
-  const returnActualSlide = distance => {
+  const returnActualSlide = (distance, e) => {
     const { scrollWidth, clientWidth } = container.current;
     const { sizeOfFullItems } = sizeOfFullItemsAndSingleMargin()
     let sliderSize = scrollWidth - clientWidth
 
-    if (distance <= sliderSize) {
+    if (e) { // case button click
+      if (distance > sliderSize) {
+        setSlide(dots)
+      }
+    }
+
+    if (distance < sliderSize) {
       if (distance <= 0) {
         setSlide(1)
       } else if (distance <= sizeOfFullItems) {
@@ -320,12 +334,22 @@ const Slider = ({
       } else if (distance > sizeOfFullItems * 7 && distance <= sizeOfFullItems * 8) {
         setSlide(9)
       }
-    } else {
+    } else if (distance > sliderSize) { // case mouse grab
       return
     }
   }
 
   const returnArrow = direction => direction === 'left' ? '<' : '>'
+
+  const handleDotClick = (index, e) => {
+    const { sizeOfFullItems } = sizeOfFullItemsAndSingleMargin()
+    let distance = sizeOfFullItems * index
+
+    setActualDistanceFromLeft(distance)
+    returnActualSlide(distance, e)
+
+    container.current.scroll({ left: distance, behavior: "smooth" });
+  }
 
   return (
     <>
@@ -346,7 +370,9 @@ const Slider = ({
               canScrollLeft={canScrollLeft}
               onClick={e => changeSlideAfterClick(-scrollDistance(scrollBy), e)}
             >
-              <Arrow>{returnArrow('left')}</Arrow>
+              <Arrow>
+                {arrowLeft ? arrowLeft : returnArrow('left')}
+              </Arrow>
             </ButtonLeft>
             <ButtonRight
               style={buttonsStyle}
@@ -354,15 +380,17 @@ const Slider = ({
               canScrollRight={canScrollRight}
               onClick={e => changeSlideAfterClick(scrollDistance(scrollBy), e)}
             >
-              <Arrow>{returnArrow('right')}</Arrow>
+              <Arrow>
+                {arrowRight ? arrowRight : returnArrow('right')}
+              </Arrow>
             </ButtonRight>
           </ButtonGroup>
         )}
       </StyledSlider>
       {withDots && (
         <DotsGroup slide={slide} >
-          {[...Array(dots).keys()].map(dot => {
-            return <Dot key={dot}></Dot>
+          {[...Array(dots).keys()].map((dot, index) => {
+            return <Dot key={dot} onClick={(e) => handleDotClick(index, e)}></Dot>
           })}
         </DotsGroup>
       )}
