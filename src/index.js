@@ -100,55 +100,12 @@ const Slider = ({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const [dots, setDots] = useState();
+  const [dots, setDots] = useState(null);
   const [slide, setSlide] = useState(1)
   const [active, setActive] = useState()
   const [actualDistanceFromLeft, setActualDistanceFromLeft] = useState(0)
 
   const container = useRef(null);
-
-  useEffect(() => { // scrollToChild ??
-    const { fullItems } = sizeOfFullItemsAndSingleMargin()
-    let images = [...container.current.querySelectorAll("img")]
-
-    // pierwsze 5 obrazkoów dodaje atrybut src, a reszta ma data-src
-    for (let img in images) {
-      if (!images[img].dataset.src) {
-        images[img].dataset.src = images[img].src
-        images[img].removeAttribute('src')
-      }
-
-      if (img < 5) {
-        images[img].src = images[img].dataset.src
-      }
-    }
-
-    // obrazki, które niedługo pojawią się w slajderze dostają atrybut src
-    for (let img in images) {
-      if (img >= fullItems * slide && img <= fullItems * slide + fullItems) {
-        images[img].src = images[img].dataset.src
-      }
-    }
-  }, [slide])
-
-  useEffect(() => {
-    const slider = container.current
-    checkForOverflow();
-    checkForScrollPosition();
-
-    slider.addEventListener(
-      "scroll",
-      debounceCheckForScrollPosition
-    );
-
-    return () => {
-      slider.removeEventListener(
-        "scroll",
-        debounceCheckForScrollPosition
-      );
-      debounceCheckForOverflow.cancel();
-    };
-  }, [data]);
 
   useEffect(() => {
     const howManyDots = () => {
@@ -172,6 +129,56 @@ const Slider = ({
 
     howManyDots()
   }, [data.length, scrollBy])
+
+
+  useEffect(() => {
+    const { fullItems } = sizeOfFullItemsAndSingleMargin()
+    let images = [...container.current.querySelectorAll("img")]
+    let items = fullItems || 5
+    let scrollByLazy = scrollBy
+
+    // obrazki, które widać w slajderze dostają atrybut src, a reszta ma data-src
+    for (let img in images) {
+      if (!images[img].dataset.src) {
+        images[img].dataset.src = images[img].src
+        images[img].removeAttribute('src')
+      }
+      if (scrollBy && img <= scrollByLazy) {
+        images[img].src = images[img].dataset.src
+      }
+      if (img <= items) {
+        images[img].src = images[img].dataset.src
+      }
+    }
+
+    // obrazki, które niedługo pojawią się w slajderze dostają atrybut src
+    for (let img in images) {
+      if (scrollBy && img >= scrollByLazy * slide && img < scrollByLazy * slide + scrollByLazy) {
+        images[img].src = images[img].dataset.src
+      } else if (img >= fullItems * slide && img <= fullItems * slide + fullItems) {
+        images[img].src = images[img].dataset.src
+      }
+    }
+  }, [slide])
+
+  useEffect(() => {
+    const slider = container.current
+    checkForOverflow();
+    checkForScrollPosition();
+
+    slider.addEventListener(
+      "scroll",
+      debounceCheckForScrollPosition
+    );
+
+    return () => {
+      slider.removeEventListener(
+        "scroll",
+        debounceCheckForScrollPosition
+      );
+      debounceCheckForOverflow.cancel();
+    };
+  }, [data]);
 
   useEffect(() => {
     let slider = container.current
@@ -252,7 +259,17 @@ const Slider = ({
 
   const scrollToChildProp = scrollBy => {
     const { children } = container.current;
-    const { singleChildMargin } = sizeOfFullItemsAndSingleMargin()
+    const { singleChildMargin, fullItems } = sizeOfFullItemsAndSingleMargin()
+
+    let images = [...container.current.querySelectorAll("img")]
+
+    // wszystkie obrazki przed docelowym oraz obrazki, 
+    // które niedługo pojawią się w slajderze dostają atrybut src
+    for (let img in images) {
+      if (img < +scrollToChild + fullItems) {
+        images[img].src = images[img].dataset.src
+      }
+    }
 
     let distance = (scrollBy - 1) * (children[0].clientWidth + singleChildMargin);
     container.current.scroll({ left: distance, behavior: "smooth" });
@@ -356,6 +373,18 @@ const Slider = ({
         setSlide(8)
       } else if (distance > sizeOfFullItems * 7 && distance <= sizeOfFullItems * 8) {
         setSlide(9)
+      } else if (distance > sizeOfFullItems * 8 && distance <= sizeOfFullItems * 9) {
+        setSlide(10)
+      } else if (distance > sizeOfFullItems * 9 && distance <= sizeOfFullItems * 10) {
+        setSlide(11)
+      } else if (distance > sizeOfFullItems * 10 && distance <= sizeOfFullItems * 11) {
+        setSlide(12)
+      } else if (distance > sizeOfFullItems * 11 && distance <= sizeOfFullItems * 12) {
+        setSlide(13)
+      } else if (distance > sizeOfFullItems * 12 && distance <= sizeOfFullItems * 13) {
+        setSlide(14)
+      } else if (distance > sizeOfFullItems * 13 && distance <= sizeOfFullItems * 14) {
+        setSlide(15)
       }
     } else if (distance > sliderSize) { // case mouse grab
       return
@@ -410,7 +439,7 @@ const Slider = ({
           </ButtonGroup>
         )}
       </StyledSlider>
-      {withDots && (
+      {withDots && dots && (
         <DotsGroup slide={slide} >
           {[...Array(dots).keys()].map((dot, index) => {
             return <Dot key={dot} onClick={(e) => handleDotClick(index, e)}></Dot>

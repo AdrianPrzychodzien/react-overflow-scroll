@@ -7,6 +7,7 @@
 ## Built with react hooks, styled-components and lodash
 
 - horizontal scrollbar
+- lazy loading images!!
 - touch support
 - grabbing and clicking
 - smooth scrolling
@@ -80,6 +81,24 @@ ReactDOM.render(<App />, document.getElementById("root"));
 | scrollToClick |          Boolean          |                      Enable scrolling to specified item |
 | scrollToChild |          Number           | Which child should scroll to when ScrollToClick is true |
 | scrollBy      |          Number           |                      Scroll by specific amount of items |
+
+# Lazy loading
+
+React-overflow-scroll helps optimize your aplication by loading images only as they enter the viewport.
+It is written in vanilla JavaScript so it makes package lightweight. Make sure to provide `data-set`
+as img attribute.
+
+### Example:
+
+```javascript
+<img alt="lazy image" data-src="lazy.jpeg" />
+```
+
+Lazy loading will not work correctly with **withDots**, so make sure to to switch it off.
+
+# Styles
+
+Include width propery in `sliderStyle` prop or in parent's element.
 
 # Gotchas
 
