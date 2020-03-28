@@ -1,8 +1,6 @@
 # React Overflow Scroll
 
-![react-overflow-slider](src/assets/slider.gif)
-![gotobutton](src/assets/go-to-button.gif)
-![styles](src/assets/styles.gif)
+![react-overflow-slider](assets/slider.gif)
 
 ## Built with react hooks, styled-components and lodash
 
@@ -68,7 +66,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 
 | Props         |           Type            |                                             Description |
 | ------------- | :-----------------------: | ------------------------------------------------------: |
-| data          | Array of react components |                               Items to render in slider |
+| data          | Array components / images |                               Items to render in slider |
 | sliderStyle   |          Object           |                                       Styles for slider |
 | buttonStyle   |          Object           |                                      Styles for buttons |
 | withArrows    |          Boolean          |                                 Render clickable arrows |
@@ -85,18 +83,20 @@ ReactDOM.render(<App />, document.getElementById("root"));
 # Lazy loading
 
 React-overflow-scroll helps optimize your aplication by loading images only as they enter the viewport.
-It is written in vanilla JavaScript so it makes package lightweight. Make sure to provide `data-set`
-as img attribute.
+It is written in vanilla JavaScript so it makes package lightweight.
+Make sure to provide `data-set` as img attribute.
 
 ### Example:
 
 ```javascript
-<img alt="lazy image" data-src="lazy.jpeg" />
+<img alt="lazy image" data-src="lazy.jpg" />
 ```
 
 Lazy loading will not work correctly with **withDots**, so make sure to to switch it off.
 
 # Styles
+
+![styles](assets/styles.gif)
 
 Include width propery in `sliderStyle` prop or in parent's element.
 
@@ -106,3 +106,5 @@ It is not recommended to use navigation dots on mobile. The will not follow slid
 Ignore them in props because by default they are hidden or set `withDots={false}` in props.
 
 # Usage examples
+
+![gotobutton](assets/go-to-button.gif)
