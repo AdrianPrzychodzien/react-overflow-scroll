@@ -107,6 +107,30 @@ const Slider = ({
 
   const container = useRef(null);
 
+  useEffect(() => { // scrollToChild ??
+    const { fullItems } = sizeOfFullItemsAndSingleMargin()
+    let images = [...container.current.querySelectorAll("img")]
+
+    // pierwsze 5 obrazkoów dodaje atrybut src, a reszta ma data-src
+    for (let img in images) {
+      if (!images[img].dataset.src) {
+        images[img].dataset.src = images[img].src
+        images[img].removeAttribute('src')
+      }
+
+      if (img < 5) {
+        images[img].src = images[img].dataset.src
+      }
+    }
+
+    // obrazki, które niedługo pojawią się w slajderze dostają atrybut src
+    for (let img in images) {
+      if (img >= fullItems * slide && img <= fullItems * slide + fullItems) {
+        images[img].src = images[img].dataset.src
+      }
+    }
+  }, [slide])
+
   useEffect(() => {
     const slider = container.current
     checkForOverflow();
@@ -128,8 +152,7 @@ const Slider = ({
 
   useEffect(() => {
     const howManyDots = () => {
-      const { children, clientWidth } = container.current;
-      let fullItems = Math.floor(clientWidth / children[0].clientWidth);
+      const { fullItems } = sizeOfFullItemsAndSingleMargin()
 
       if (scrollBy > 1) {
         const dotsNumber = Math.ceil(data.length / scrollBy);
@@ -142,13 +165,13 @@ const Slider = ({
         }
         setDots(dotsNumber)
       } else {
-        const dotsNumber = Math.ceil(data.length / fullItems);
+        const dotsNumber = Math.ceil(data.length / fullItems)
         setDots(dotsNumber)
       }
     }
 
     howManyDots()
-  }, [])
+  }, [data.length, scrollBy])
 
   useEffect(() => {
     let slider = container.current
