@@ -102,7 +102,7 @@ Include width propery in `sliderStyle` prop or in parent's element.
 
 # Gotchas
 
-It is not recommended to use navigation dots on mobile. The will not follow slider.
+It is not recommended to use navigation dots on mobile. They will not follow slider.
 Ignore them in props because by default they are hidden or set `withDots={false}` in props.
 
 # Usage examples
