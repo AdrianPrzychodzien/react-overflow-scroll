@@ -130,7 +130,6 @@ const Slider = ({
     howManyDots()
   }, [data.length, scrollBy])
 
-
   useEffect(() => {
     const { fullItems } = sizeOfFullItemsAndSingleMargin()
     let images = [...container.current.querySelectorAll("img")]
@@ -146,6 +145,9 @@ const Slider = ({
       if (scrollBy && img <= scrollByLazy) {
         images[img].src = images[img].dataset.src
       }
+      if (img < +scrollToChild + fullItems) {
+        images[img].src = images[img].dataset.src
+      }
       if (img <= items) {
         images[img].src = images[img].dataset.src
       }
@@ -153,7 +155,9 @@ const Slider = ({
 
     // obrazki, które niedługo pojawią się w slajderze dostają atrybut src
     for (let img in images) {
-      if (scrollBy && img >= scrollByLazy * slide && img < scrollByLazy * slide + scrollByLazy) {
+      if (scrollToChild && img <= +scrollToChild + 1) {
+        images[img].src = images[img].dataset.src
+      } else if (scrollBy && img >= scrollByLazy * slide && img < scrollByLazy * slide + scrollByLazy) {
         images[img].src = images[img].dataset.src
       } else if (img >= fullItems * slide && img <= fullItems * slide + fullItems) {
         images[img].src = images[img].dataset.src
@@ -257,21 +261,11 @@ const Slider = ({
     setTimeout(() => setButtonDisabled(false), 500)
   }
 
-  const scrollToChildProp = scrollBy => {
+  const scrollToChildProp = childNumber => {
     const { children } = container.current;
-    const { singleChildMargin, fullItems } = sizeOfFullItemsAndSingleMargin()
+    const { singleChildMargin } = sizeOfFullItemsAndSingleMargin()
 
-    let images = [...container.current.querySelectorAll("img")]
-
-    // wszystkie obrazki przed docelowym oraz obrazki, 
-    // które niedługo pojawią się w slajderze dostają atrybut src
-    for (let img in images) {
-      if (img < +scrollToChild + fullItems) {
-        images[img].src = images[img].dataset.src
-      }
-    }
-
-    let distance = (scrollBy - 1) * (children[0].clientWidth + singleChildMargin);
+    let distance = (childNumber - 1) * (children[0].clientWidth + singleChildMargin);
     container.current.scroll({ left: distance, behavior: "smooth" });
 
     returnActualSlide(distance)
