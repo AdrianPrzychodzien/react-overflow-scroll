@@ -93,7 +93,7 @@ const Slider = ({
   withArrows = true, withGrab = false, withDots = false,
   arrowLeft, arrowRight,
   scrollBy, scrollToClick = false, scrollToChild,
-  withScale = 'md'
+  withScale = 'md', withAuto = false
 }) => {
   const [arrows, setArrows] = useState(withArrows)
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -108,26 +108,9 @@ const Slider = ({
   const container = useRef(null);
 
   useEffect(() => {
-    const howManyDots = () => {
-      const { fullItems } = sizeOfFullItemsAndSingleMargin()
-
-      if (scrollBy > 1) {
-        const dotsNumber = Math.ceil(data.length / scrollBy);
-        if (fullItems - scrollBy > 4) { // because can`t scroll last slide more than 1
-          setDots(dotsNumber - 3); return
-        } else if (fullItems - scrollBy > 2) {
-          setDots(dotsNumber - 2); return
-        } else if (fullItems - scrollBy <= 2) {
-          setDots(dotsNumber - 1); return
-        }
-        setDots(dotsNumber)
-      } else {
-        const dotsNumber = Math.ceil(data.length / fullItems)
-        setDots(dotsNumber)
-      }
-    }
-
-    howManyDots()
+    setTimeout(() => {
+      howManyDots()
+    }, 0)
   }, [data.length, scrollBy])
 
   useEffect(() => {
@@ -148,6 +131,9 @@ const Slider = ({
       if (img < +scrollToChild + fullItems) {
         images[img].src = images[img].dataset.src
       }
+      if (withAuto && img <= items) {
+        images[img].src = images[img].dataset.src
+      }
       if (img <= items) {
         images[img].src = images[img].dataset.src
       }
@@ -155,7 +141,9 @@ const Slider = ({
 
     // obrazki, które niedługo pojawią się w slajderze dostają atrybut src
     for (let img in images) {
-      if (scrollToChild && img <= +scrollToChild + 1) {
+      if (withAuto && img >= fullItems * slide && img <= fullItems * slide + fullItems) {
+        images[img].src = images[img].dataset.src
+      } else if (scrollToChild && img <= +scrollToChild + 1) {
         images[img].src = images[img].dataset.src
       } else if (scrollBy && img >= scrollByLazy * slide && img < scrollByLazy * slide + scrollByLazy) {
         images[img].src = images[img].dataset.src
@@ -226,6 +214,27 @@ const Slider = ({
       scrollToChildProp(scrollToChild)
     }
   }, [scrollToClick])
+
+  useEffect(() => {
+    let autoSliderMove
+    const { children } = container.current;
+    const { singleChildMargin } = sizeOfFullItemsAndSingleMargin()
+    const singleItem = children[0].clientWidth + singleChildMargin
+
+
+    const fn = () => {
+      let distance = container.current.scrollLeft + singleItem
+      returnActualSlide(distance)
+      setActualDistanceFromLeft(distance)
+      container.current.scrollBy({ left: singleItem, behavior: "smooth" });
+    }
+
+    if (withAuto) {
+      autoSliderMove = setInterval(() => {
+        fn()
+      }, 1000)
+    }
+  }, [withAuto])
 
   const checkForScrollPosition = () => {
     const { scrollLeft, scrollWidth, clientWidth } = container.current;
@@ -386,6 +395,25 @@ const Slider = ({
   }
 
   const returnArrow = direction => direction === 'left' ? '<' : '>'
+
+  const howManyDots = () => {
+    const { fullItems } = sizeOfFullItemsAndSingleMargin()
+
+    if (scrollBy > 1) {
+      const dotsNumber = Math.ceil(data.length / scrollBy);
+      if (fullItems - scrollBy > 4) { // because can`t scroll last slide more than 1
+        setDots(dotsNumber - 3); return
+      } else if (fullItems - scrollBy > 2) {
+        setDots(dotsNumber - 2); return
+      } else if (fullItems - scrollBy <= 2) {
+        setDots(dotsNumber - 1); return
+      }
+      setDots(dotsNumber)
+    } else {
+      const dotsNumber = Math.ceil(data.length / fullItems)
+      setDots(dotsNumber)
+    }
+  }
 
   const handleDotClick = (index, e) => {
     const { sizeOfFullItems } = sizeOfFullItemsAndSingleMargin()
