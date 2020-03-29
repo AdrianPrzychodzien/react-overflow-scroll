@@ -104,6 +104,7 @@ const Slider = ({
   const [slide, setSlide] = useState(1)
   const [active, setActive] = useState()
   const [actualDistanceFromLeft, setActualDistanceFromLeft] = useState(0)
+  const [intervalID, setIntervalID] = useState()
 
   const container = useRef(null);
 
@@ -157,20 +158,19 @@ const Slider = ({
     const slider = container.current
     checkForOverflow();
     checkForScrollPosition();
+    moveItemsAutomatically()
 
-    slider.addEventListener(
-      "scroll",
+    slider.addEventListener("scroll",
       debounceCheckForScrollPosition
     );
 
     return () => {
-      slider.removeEventListener(
-        "scroll",
+      slider.removeEventListener("scroll",
         debounceCheckForScrollPosition
       );
       debounceCheckForOverflow.cancel();
     };
-  }, [data]);
+  }, []);
 
   useEffect(() => {
     let slider = container.current
@@ -183,13 +183,14 @@ const Slider = ({
       isDown = true
       setArrows(false)
       setActive(true)
+
       startX = e.pageX - slider.offsetLeft
       scrollLeftLocal = slider.scrollLeft
     })
     slider.addEventListener('mouseleave', e => {
       isDown = false
       setArrows(true)
-      setActive(false)
+      // setActive(false)
     })
     slider.addEventListener('mouseup', e => {
       isDown = false
@@ -216,25 +217,28 @@ const Slider = ({
   }, [scrollToClick])
 
   useEffect(() => {
-    let autoSliderMove
+    if (!active) {
+      clearInterval(intervalID)
+    }
+  }, [active])
+
+
+  const moveItemsAutomatically = () => {
     const { children } = container.current;
     const { singleChildMargin } = sizeOfFullItemsAndSingleMargin()
     const singleItem = children[0].clientWidth + singleChildMargin
 
-
-    const fn = () => {
-      let distance = container.current.scrollLeft + singleItem
-      returnActualSlide(distance)
-      setActualDistanceFromLeft(distance)
-      container.current.scrollBy({ left: singleItem, behavior: "smooth" });
-    }
-
     if (withAuto) {
-      autoSliderMove = setInterval(() => {
-        fn()
-      }, 1000)
+      let sliderInterval = setInterval(() => {
+        let distance = container.current.scrollLeft + singleItem
+        returnActualSlide(distance)
+        setActualDistanceFromLeft(distance)
+        container.current.scrollBy({ left: singleItem, behavior: "smooth" });
+      }, 1500)
+
+      setIntervalID(sliderInterval)
     }
-  }, [withAuto])
+  }
 
   const checkForScrollPosition = () => {
     const { scrollLeft, scrollWidth, clientWidth } = container.current;
@@ -253,6 +257,7 @@ const Slider = ({
     let newDistance = actualDistanceFromLeft + distance
 
     setActualDistanceFromLeft(newDistance)
+    clearInterval(intervalID)
 
     // right button click
     if (distance >= 0) {
@@ -277,6 +282,7 @@ const Slider = ({
     let distance = (childNumber - 1) * (children[0].clientWidth + singleChildMargin);
     container.current.scroll({ left: distance, behavior: "smooth" });
 
+    clearInterval(intervalID)
     returnActualSlide(distance)
     setActualDistanceFromLeft(distance)
   }
@@ -419,6 +425,7 @@ const Slider = ({
     const { sizeOfFullItems } = sizeOfFullItemsAndSingleMargin()
     let distance = sizeOfFullItems * index
 
+    clearInterval(intervalID)
     setActualDistanceFromLeft(distance)
     returnActualSlide(distance, e)
 
