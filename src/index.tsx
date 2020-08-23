@@ -21,12 +21,18 @@ const Button = styled.button`
     border-color: black;
   }
 `;
-const ButtonLeft = styled(Button)`
-  display: ${({ canScrollLeft }) => (canScrollLeft ? `block` : `none`)};
+interface IButtonLeft {
+  canScrollLeft: boolean;
+}
+const ButtonLeft = styled(Button)<IButtonLeft>`
+  display: ${({ canScrollLeft }) => (canScrollLeft ? "block" : "none")};
   margin-right: auto;
 `;
-const ButtonRight = styled(Button)`
-  display: ${({ canScrollRight }) => (canScrollRight ? `block` : `none`)};
+interface IButtonRight {
+  canScrollRight: boolean;
+}
+const ButtonRight = styled(Button)<IButtonRight>`
+  display: ${({ canScrollRight }) => (canScrollRight ? "block" : "none")};
   margin-left: auto;
 `;
 const Arrow = styled.div`
@@ -37,7 +43,11 @@ const Arrow = styled.div`
   font-weight: 600;
   transform: scale(1.5, 2);
 `;
-const SliderContainer = styled.div`
+interface ISliderContainer {
+  scale: number | null;
+  withGrab: boolean;
+}
+const SliderContainer = styled.div<ISliderContainer>`
   ::-webkit-scrollbar {
     width: 0px;
   }
@@ -46,7 +56,7 @@ const SliderContainer = styled.div`
   display: flex;
   overflow: auto;
   transition: all 0.3s;
-  ${({ active }) => (active.active ? `transform: scale(${active.scale})` : ``)};
+  ${({ scale }) => (scale ? `transform: scale(${scale})` : ``)};
   cursor: ${({ withGrab }) => (withGrab ? `grabbing` : `pointer`)};
   ${({ withGrab }) => (withGrab ? `cursor: -webkit-grabbing` : ``)};
 `;
@@ -66,14 +76,14 @@ const DotsGroup = styled.div`
   display: flex;
   justify-content: center;
   color: black;
-  ${({ slide }) =>
-    slide
+  ${(props: { slide: number }) =>
+    props.slide
       ? `&:nth-child(2) div {
-      &:nth-child(${slide}) {
-      transition: all 0.3s linear;
-      transform: scale(1.5)
-    }
-  }`
+    &:nth-child(${props.slide}) {
+    transition: all 0.3s linear;
+    transform: scale(1.5)
+  }
+}`
       : null}
 `;
 const Dot = styled.div`
